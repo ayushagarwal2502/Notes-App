@@ -1,0 +1,28 @@
+{
+  "dependencies": {
+    "amqplib": "^0.10.2",
+    "axios": "^0.27.2",
+    "cors": "^2.8.5",
+    "dictionaryjs": "^1.0.9",
+    "express": "^4.18.1",
+    "init": "^0.1.2",
+    "nodemon": "^2.0.19",
+    "socket.io": "^4.5.1",
+    "socket.io-client": "^4.5.1",
+    "typescript": "^4.7.4",
+    "uuid4": "^2.0.3"
+  },
+  "scripts": {
+    "devStart": "nodemon serverConn.js"
+  },
+  "devDependencies": {
+    "@types/node": "^18.16.14"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "name": "express",
+  "version": "1.0.0",
+  "main": "Exchange.js",
+  "description": ""
+}

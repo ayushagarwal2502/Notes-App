@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Display Details</title>
+    <script src="https://cdn.socket.io/3.1.3/socket.io.min.js"></script>
+    <!-- CSS only -->
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.0-beta1/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-0evHe/X+R7YkIZDRvuzKMRqM+OrBnVFBL6DOitfPri4tjfHxaWutUpFmBp4vmVor" crossorigin="anonymous" />
+    <link rel="stylesheet" href="./style.css">
+
+</head>
+
+<body>
+    <!--a continer to input a note-->
+    <div class="container">
+        <input type="text" class="form-control" placeholder="Enter your note" id="note" required />
+        <br><button onclick="add()" class="btn btn-info" id="btn">Add Note
+        </button>
+    </div>
+    <button onclick="toDisplay()" class="btn btn-info">Refresh the table</button>
+    <br>
+    <!-- table where all notes will be displayed-->
+    <table class="table table-hover">
+        <thead id="tableHead">
+            <tr>
+                <th>ID <i class="fa fa-caret-down _idSort" aria-hidden="true"></i>
+                </th>
+                <th>Note <i class="fa fa-caret-down nameSort" aria-hidden="true"></i>
+                </th>
+                </th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody id="notes-list">
+
+        </tbody>
+        <script src="script.js"></script>
+        <script>
+            //socket connection at client side
+        const socket = io("http://localhost:5005");
+        socket.on("connection");
+
+            // receiveing generated socket id
+        socket.on("generateID", (result) =>{
+            sessionStorage.setItem("socketID", result);
+        });
+
+
+            const socketId = sessionStorage.getItem("socketID");
+
+            //a function to display all the notes
+            function show(Notes) {
+                notes = JSON.parse(Notes);
+                let list1 = notes.map((index) => {
+                    return `<tr>
+                    <td>${index.id}</td>
+                    <td>${index.note}</td>
+                    <td>
+                          <button onclick="edit(${index.id}, \'${index.note}\')">
+                              <i class="material-icons" id="edit">edit</i>
+                          </button>
+                          <button onclick="remove(${index.id})">
+                              <i class="material-icons" id="delete">delete</i>
+                          </button>
+                      </td>
+                      </tr>`
+                });
+                document.getElementById("notes-list").innerHTML = list1.join("");
+            }
+
+            // a function to edit a note
+            function edit(id, notetoEdit) {
+                document.getElementById("note").value = notetoEdit;
+                document.getElementById("btn").innerHTML = "Edit Note";
+                let btnEvent = document.getElementById("btn");
+                // here we changed value of add note button to edit and using same button to perform edit operation 
+                btnEvent.addEventListener('click', (event) => {
+                    event.preventDefault();
+                    //passing the request to update
+                    let reqId = dic("NOTES_UPDATE");
+                    let newnote = document.getElementById("note").value;
+                    let service = "NOTES";
+                    const url = `http://localhost:5005/notes/${socketId}/${service}/${id}/${newnote}`;
+                    const xhr2 = new XMLHttpRequest();
+                    xhr2.open("PUT", url);
+                    xhr2.send();
+                    toDisplay();
+                    document.getElementById("note").value = "";
+                    document.getElementById("btn").innerHTML = "Add Note";
+                })
+
+            }
+            //function to delete a note
+            function remove(id) {
+                window.event.preventDefault();
+                let reqId = dic("NOTES_DELETE");
+                let service = "NOTES";
+                const url = `http://localhost:5005/notes/${socketId}/${service}/${id}`
+                const xhr = new XMLHttpRequest();
+                xhr.open("DELETE", url);
+                xhr.send();
+                toDisplay();
+            }
+            //function to add new note
+            function add() {
+                window.event.preventDefault();
+                btnValue = document.getElementById('btn').innerHTML;
+
+                if (btnValue != "Edit Note") {
+                    let reqId = dic("NOTES_ADD");
+                    note = document.getElementById("note").value;
+                    let service = "NOTES";
+                    const url = `http://localhost:5005/notes/${socketId}/${service}/${note}`;
+                    const xhr1 = new XMLHttpRequest();
+                    xhr1.open("POST", url);
+                    xhr1.setRequestHeader("requestID", reqId);
+                    xhr1.send();
+                    toDisplay();
+                    document.getElementById("note").value = "";
+                }
+            }
+
+            // to fetch the data from the url below and display using show function
+            function toDisplay() {
+                const url = `http://localhost:5005/home/${socketId}`;
+                const xhr = new XMLHttpRequest();
+                xhr.open("GET", url);
+                xhr.onload = () => {
+                    show(xhr.response);
+                }
+                xhr.send();
+            }
+            toDisplay();
+        </script>
+</body>
+
+</html>
